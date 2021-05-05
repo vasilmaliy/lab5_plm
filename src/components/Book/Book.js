@@ -3,32 +3,11 @@ import { View, Image, Text, StyleSheet} from "react-native";
 import BookImage from '../BookImage'
 
 const Book = ( {book} ) => {
-    
-    const bookImage = () => {
-        switch (book.image) {
-          case "Image_01.png":
-            return require('./img/Image_01.png');
-          case "Image_02.png":
-            return require('./img/Image_02.png');
-         case "Image_03.png":
-            return require('./img/Image_03.png');
-         case "Image_05.png":
-            return require('./img/Image_05.png');
-         case "Image_06.png":
-            return require('./img/Image_06.png');
-         case "Image_07.png":
-            return require('./img/Image_07.png');
-         case "Image_08.png":
-            return require('./img/Image_08.png');
-         case "Image_10.png":
-            return require('./img/Image_10.png');
-        }
-    }
 
     return (
         <View style={styles.item}>
             <View style={styles.container}>
-                { book.image ? <BookImage image={book.image}/> : <View style={styles.noImage}></View>}
+                { book.image ? <Image source={{uri: book.image}} style={{ width: 150, height: 150 }}/> : <View style={styles.noImage}></View>}
                 <View style={styles.informationBox}>
                     <Text style={styles.title}>
                         {book.title}

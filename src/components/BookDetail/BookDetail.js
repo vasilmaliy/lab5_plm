@@ -4,68 +4,46 @@ import {
     StyleSheet,
     StatusBar,
     useEffect,
+    ActivityIndicator,
     Text,
+    Image,
     ScrollView,
 } from 'react-native';
-import { book1 , book2, book3, book4, book5, book6, book7, book8, book9, book10 } from '../ListViewController/booksDetails/details'
-import Book from "../Book/Book";
+
 import BookImage from '../BookImage'
 
 function BookDetail({book}) {
 
-    const bookDetail = () => {
-        switch (book.isbn13) {
-          case "9780321856715":
-            return book1;
-          case "9780321862969":
-            return book2;
-          case "9781118841471":
-            return book3;
-          case "9781430236054":
-            return book4;
-          case "9781430237105":
-            return book5;
-          case "9781430238072":
-            return book6;
-          case "9781430245124":
-            return book7;
-          case "9781430260226":
-            return book8;
-          case "9781449308360":
-            return book9;
-          case "9781449342753":
-            return book10;
-          default:
-            return book1;      
-        }
-    }
-
+    if( book.authors) {
     return (
         <ScrollView>
             <View style={styles.container}>
                 <View style={styles.imageBook}>
-                    <BookImage style={styles.imageBook} image={book.image}/>
+                    <Image style={styles.imageBook} style={{ width: 150, height: 150 }} source={{uri: book.image}}/>
                 </View>
                 <View style={styles.details}>
-                    <Text>Title: {bookDetail().title}</Text>
-                    <Text>Subtitle: {bookDetail().subtitle}</Text>
-                    <Text>Description: {bookDetail().desc}</Text>
+                    <Text>Title: {book.title}</Text>
+                    <Text>Subtitle: {book.subtitle}</Text>
+                    <Text>Description: {book.desc}</Text>
 
                     <View style={styles.block}>
-                    <Text>Author: {bookDetail().authors}
+                    <Text>Author: {book.authors}
                     </Text>
-                    <Text>Publisher: {bookDetail().publisher}</Text>
+                    <Text>Publisher: {book.publisher}</Text>
                     </View>
                 
                     <View style={styles.block}>
-                    <Text>Pages: {bookDetail().pages}</Text>
-                    <Text>Rating: {bookDetail().rating}</Text>
+                    <Text>Pages: {book.pages}</Text>
+                    <Text>Rating: {book.rating}</Text>
                     </View>
                     
                 </View>
             </View>
         </ScrollView>
     )
+    } else {
+      return <ActivityIndicator styles={{padding: 24}} size="large" color="#0000ff" />
+    }
 }
 
 

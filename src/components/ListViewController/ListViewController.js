@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect} from 'react';
 import {
   SafeAreaView,
   View,
@@ -8,46 +8,83 @@ import {
   ScrollView,
   Text,
   TouchableHighlight,
-} from "react-native";
-import Book from "../Book/Book";
-import data from "./BooksList";
-import { Appbar, Searchbar } from "react-native-paper";
-import AddBook from "../AddBook";
-import { SwipeRow } from "react-native-swipe-list-view";
-import BookDetail from "../BookDetail/BookDetail";
+} from 'react-native';
+import Book from '../Book/Book';
+import data from './BooksList';
+import {Appbar, Searchbar} from 'react-native-paper';
+import AddBook from '../AddBook';
+import {SwipeRow} from 'react-native-swipe-list-view';
+import BookDetail from '../BookDetail/BookDetail';
+
+const searchURL = 'https://api.itbook.store/1.0/search/';
+const bookURL = 'https://api.itbook.store/1.0/books/';
 
 const ListViewController = () => {
-  const [books, setBooks] = useState(data.books);
+  const [books, setBooks] = useState([]);
   const [book, setBook] = useState(null);
+  const [showBook, setShowBook] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const onChangeSearch = (query) => setSearchQuery(query);
+  const [searchQuery, setSearchQuery] = useState('');
+  const onChangeSearch = query => setSearchQuery(query);
   const [addBook, setAddBook] = useState(false);
+  const [isLoading, setLoading] = useState(true);
 
   const closeAddBookHandler = () => {
     setAddBook(!addBook);
   };
 
+  useEffect(() => {
+    let searchWord = searchURL + searchQuery.toLocaleLowerCase();
+    
+    if (searchQuery.length >= 3) {
+      fetch(searchWord)
+        .then(response => response.json())
+        .then(json => {
+          setBooks(json.books)
+        })
+        .catch(error => alert(error))
+        .finally(setLoading(false));
+    } else {
+      setBooks([])
+    }
+  }, [searchQuery])
+  
+  useEffect(() => {
+   
+    if (book != null) {
+      let bookIdURL = bookURL + book.isbn13;
+      fetch(bookIdURL)
+        .then(response => response.json())
+        .then(json => {
+          setBook(json)
+        })
+        .catch(error => alert(error))
+        .finally(setLoading(false));
+    }
+  }, [showBook])
+
+
   const addBookHandler = (title, subtitle, price) => {
     let newBook = {
       title: title,
       subtitle: subtitle,
-      isbn13: "noid",
+      isbn13: 'noid',
       price: price,
-      image: "",
+      image: '',
     };
     let allBooks = [...books];
     allBooks.unshift(newBook);
+    searchHandler()
     setBooks(allBooks);
   };
 
-  const deleteBookHandler = (isbn13) => {
+  const deleteBookHandler = isbn13 => {
     let allBooks = [...books];
-    let filteredList = allBooks.filter((book) => {
-        return !(isbn13 === book.isbn13)
-    })
+    let filteredList = allBooks.filter(book => {
+      return !(isbn13 === book.isbn13);
+    });
     setBooks(filteredList);
-  }
+  };
 
   if (addBook) {
     return (
@@ -58,30 +95,13 @@ const ListViewController = () => {
     );
   }
 
-  const leftSwipe = (progress, dragX) => {
-    const scale = dragX.interpolate({
-      inputRange: [0, 100],
-      outputRange: [0, 1],
-      extrapolate: "clamp",
-    });
-    return (
-      <TouchableOpacity onPress={props.handleDelete} activeOpacity={0.6}>
-        <View style={styles.deleteBox}>
-          <Animated.Text style={{ transform: [{ scale: scale }] }}>
-            Delete
-          </Animated.Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  if (book) {
+  if (showBook) {
     return (
       <View>
         <Appbar.Header>
           <Appbar.BackAction
             onPress={() => {
-              setBook(null);
+              setShowBook(false);
             }}
           />
         </Appbar.Header>
@@ -89,8 +109,8 @@ const ListViewController = () => {
       </View>
     );
   } else {
-    let filteredData = books.filter((item) => {
-      return Object.keys(item).some((key) =>
+    let filteredData = books.filter(item => {
+      return Object.keys(item).some(key => 
         item[key].toLowerCase().includes(searchQuery.toLocaleLowerCase())
       );
     });
@@ -111,27 +131,27 @@ const ListViewController = () => {
           </View>
         </Appbar.Header>
         <ScrollView style={styles.scrollView}>
-          {filteredData.map((book) => (
-            <View>
+          {filteredData.length == 0 ? <Text style={{marginLeft: '35%', marginTop: 30}} >No items found</Text> : <View></View>}
+          {filteredData.map(book => (
+            <View key={book.isbn13}>
               {/* <Book key={book.isbn13} book={book} /> */}
               <View style={styles.standalone}>
                 <SwipeRow rightOpenValue={-75} leftOpenValue={75}>
-                  
-                  <TouchableOpacity style={styles.standaloneRowBack} onPress={() => {
+                  <TouchableOpacity
+                    style={styles.standaloneRowBack}
+                    onPress={() => {
                       deleteBookHandler(book.isbn13);
                       // console.log(book.isbn13)
                     }}>
                     <Text style={styles.backTextWhite}>Delete</Text>
                     <Text style={styles.backTextWhite}>Delete</Text>
-                  
                   </TouchableOpacity>
-                  
-                  
+
                   <TouchableHighlight
                     onPress={() => {
+                      setShowBook(true);
                       setBook(book);
-                    }}
-                  >
+                    }}>
                     <Book key={book.isbn13} book={book} />
                   </TouchableHighlight>
                 </SwipeRow>
@@ -144,7 +164,7 @@ const ListViewController = () => {
   }
 };
 
-const width_proportion = "80%";
+const width_proportion = '80%';
 
 const styles = StyleSheet.create({
   container: {
@@ -155,7 +175,7 @@ const styles = StyleSheet.create({
     width: width_proportion,
   },
   item: {
-    backgroundColor: "#f9c2ff",
+    backgroundColor: '#f9c2ff',
     padding: 20,
     marginVertical: 8,
     marginHorizontal: 16,
@@ -165,23 +185,23 @@ const styles = StyleSheet.create({
   },
   headerbar: {
     flex: 1,
-    justifyContent: "space-between",
-    flexDirection: "row",
+    justifyContent: 'space-between',
+    flexDirection: 'row',
   },
   centeredView: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 22,
   },
   modalView: {
     margin: 20,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 20,
     paddingHorizontal: 35,
     paddingBottom: 35,
 
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -198,17 +218,17 @@ const styles = StyleSheet.create({
   },
   buttonClose: {
     marginLeft: 300,
-    backgroundColor: "#F194FF",
+    backgroundColor: '#F194FF',
     width: 40,
     height: 40,
   },
   buttonAdd: {
-    backgroundColor: "#2196F3",
+    backgroundColor: '#2196F3',
   },
   textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   modalText: {
     marginBottom: 1,
@@ -227,23 +247,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'stretch',
   },
- 
+
   standaloneRowBack: {
-    alignItems: "center",
-    backgroundColor: "red",
+    alignItems: 'center',
+    backgroundColor: 'red',
     flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     padding: 15,
     height: 165,
     width: '90%',
-    marginLeft: "5%",
+    marginLeft: '5%',
     marginTop: 10,
     borderRadius: 5,
     fontSize: 32,
   },
   backTextWhite: {
-    color: "#FFF",
+    color: '#FFF',
   },
 });
 
